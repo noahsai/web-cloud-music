@@ -67,7 +67,7 @@ private:
     QAction*  showlrc;
      QAction*  tolock;
     lrcdesktop * lrcshow;
-    bool  justhide;
+    //bool  justhide;
     bool playing;
     QString  gotlrc;
     QMap<QString , QString>  mp3list;
