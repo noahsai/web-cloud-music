@@ -9,7 +9,7 @@ webmusic::webmusic(QWidget *parent) :
     datapath = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) +"/web-cloud-music/webdata";
     QDir().mkpath(datapath);
     ui->horizontalLayout->addWidget(&webview);
-    justhide = false;
+   // justhide = false;
     playing = false;
     cachemanager = NULL;
     //=========歌词=========
@@ -73,7 +73,6 @@ void webmusic::setslottoweb()
    // qDebug()<<"setslottoweb ed";
     webview.page()->mainFrame()->addToJavaScriptWindowObject("webcloudmusic",this);
     webview.page()->mainFrame()->evaluateJavaScript(" \
-document.getElementsByClassName('icn icn-list')[0].onclick = Function(\"a = document.getElementById('g_playlist');b=(a!=null);webcloudmusic.toshowlrc(!b);\");\
 document.getElementsByClassName('ply')[0].onclick = Function(\"a = document.getElementsByClassName('pas')[0];b=(a!=null);webcloudmusic.timerstart(!b);\");\
 a = document.getElementsByClassName('m-nav')[0] ; a.children[4].style.display='none'; a.children[5].style.display='none';\
 b = a.children[3];\
@@ -97,13 +96,6 @@ void webmusic::timerstart(bool b){//用处不大，也就停止播放时打开�
 
 void webmusic::timeout()
 {
-    if( justhide ) {
-        justhide = false;
-        QVariant ret = webview.page()->mainFrame()->evaluateJavaScript("document.getElementsByClassName('lytit')[0].innerText");    //strparam是运行js函数可以带的参数
-        //qDebug()<<ret.toString();
-        QString text = ret.toString();
-        if(text.isEmpty()) clickweblrc();//如果隐藏时歌词是关闭的，则手动打开。
-    }
     QVariant ret = webview.page()->mainFrame()->evaluateJavaScript("\
                                                                     a = document.getElementsByClassName('j-flag z-sel')[0].innerText ;\
                                                                      b = document.getElementsByClassName('j-flag z-sel')[0].nextSibling ;\
@@ -194,8 +186,12 @@ void webmusic::next(){
     webview.page()->mainFrame()->evaluateJavaScript("document.getElementsByClassName('nxt')[0].click()");
 }
 
-void webmusic:: clickweblrc(){
-    webview.page()->mainFrame()->evaluateJavaScript("document.getElementsByClassName('icn icn-list')[0].click()");
+void webmusic:: clickweblrc(bool b){
+    // document.getElementsByClassName('icn icn-list')[0].onclick = Function(\"a = document.getElementById('g_playlist');b=(a!=null);webcloudmusic.toshowlrc(!b);\");
+    QVariant ret = webview.page()->mainFrame()->evaluateJavaScript("document.getElementsByClassName('lytit')[0].innerText");    //
+    //qDebug()<<ret.toString();
+    bool now =  !(ret.toString().isEmpty()) ;//现在网页歌词的状态
+    if( b^ now)    webview.page()->mainFrame()->evaluateJavaScript("document.getElementsByClassName('icn icn-list')[0].click()");//使用异或，不同时执行，相同时忽略
 }
 
 void webmusic::trayinit()
@@ -233,17 +229,14 @@ void webmusic::trayinit()
 
 }
 
-void webmusic::toshowlrc(bool b)
+void webmusic::toshowlrc(bool b)//隐藏歌词时不要影响网页的歌词了
 {
     qDebug()<<"toshowlrc";
     if( b )  {
         lrcshow->setVisible(true);
         showlrc ->setChecked(true);
-        QVariant ret = webview.page()->mainFrame()->evaluateJavaScript("document.getElementsByClassName('pas')[0].innerText");    //strparam是运行js函数可以带的参数
-       // qDebug()<<"toshowlrc"<<ret.toString();
-        QString text = ret.toString();
-        if(text.isEmpty())        timer.stop();//启动歌词时没有在播放就停止定时器
-        else      timer.start();
+        clickweblrc(true);
+        timer.start();
     }
     else {
         showlrc ->setChecked(false);
@@ -254,15 +247,14 @@ void webmusic::toshowlrc(bool b)
 }
 
 void webmusic:: closeEvent(QCloseEvent* event){
-    QVariant ret = webview.page()->mainFrame()->evaluateJavaScript("document.getElementsByClassName('pas')[0].innerText");    //strparam是运行js函数可以带的参数
-   // qDebug()<<"toshowlrc"<<ret.toString();
+    QVariant ret = webview.page()->mainFrame()->evaluateJavaScript("document.getElementsByClassName('pas')[0].innerText");    //
     QString text = ret.toString();
     if(!text.isEmpty() && showlrc->isChecked()) {
+       //  qDebug()<<"toshowlrc"<<ret.toString();
+         toshowlrc(true);//里面会
         timer.start();
     }
-    else{
-         justhide = true;
-    }
+    else timer.stop();
     hide();
     savecfg();
     event->ignore();

@@ -44,7 +44,7 @@ private slots:
     void playstop();
     void pre();
     void next();
-    void clickweblrc();
+    void clickweblrc(bool);
     void trayiconactive(QSystemTrayIcon::ActivationReason);
     void trayinit();
     void setslottoweb();
