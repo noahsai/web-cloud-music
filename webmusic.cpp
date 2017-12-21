@@ -52,12 +52,12 @@ webmusic::webmusic(QWidget *parent) :
     connect( &webview ,SIGNAL(loadFinished(bool)),this,SLOT(setslottoweb()));
     connect( &webview ,SIGNAL(loadFinished(bool)),this,SLOT(savecookie()));
     connect(&webview , SIGNAL(loadProgress(int)),ui->loading,SLOT(setValue(int)));
-    ui->loading->setMaximumWidth(this->width()*15/16);
 
     setWindowTitle("网页云音乐");
     setWindowIcon(QIcon(":/icon.svg"));
-    readcookie();
     readcfg();
+    readcookie();
+    ui->loading->setMaximumWidth(this->width()*15/16);//需要放在readcfg之后
     webview.hide();
     webview.load(QUrl("http://music.163.com"));
 }
