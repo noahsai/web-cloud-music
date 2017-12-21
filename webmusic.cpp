@@ -23,7 +23,6 @@ webmusic::webmusic(QWidget *parent) :
     trayinit();
     trayIcon->show();
     //=========缓存===========
-    jar = new mycookiejar();
     QDir().mkpath("/tmp/web-cloud-music");
     diskCache = new mycache(this);
     diskCache->setCacheDirectory("/tmp/web-cloud-music");
@@ -47,16 +46,18 @@ webmusic::webmusic(QWidget *parent) :
    // lrc.resize(300,30);
    // lrc.show();
 
-    setWindowTitle("网页云音乐");
-    setWindowIcon(QIcon(":/icon.svg"));
-    readcookie();
-    readcfg();
+    jar = new mycookiejar();//必须放在readcookie前
     webview.page()->networkAccessManager()->setCookieJar(jar);
     //connect(webview.page()->mainFrame(), SIGNAL(javaScriptWindowObjectCleared()),   this, SLOT(setslottoweb()));//qt推荐的，不过这样用貌似也没事
     connect( &webview ,SIGNAL(loadFinished(bool)),this,SLOT(setslottoweb()));
     connect( &webview ,SIGNAL(loadFinished(bool)),this,SLOT(savecookie()));
     connect(&webview , SIGNAL(loadProgress(int)),ui->loading,SLOT(setValue(int)));
     ui->loading->setMaximumWidth(this->width()*15/16);
+
+    setWindowTitle("网页云音乐");
+    setWindowIcon(QIcon(":/icon.svg"));
+    readcookie();
+    readcfg();
     webview.hide();
     webview.load(QUrl("http://music.163.com"));
 }
@@ -127,6 +128,8 @@ void webmusic::savecookie()
 void webmusic::readcookie()
 {
    QFile file(datapath+"/cookie.save");
+   //qDebug()<<file.fileName()<<endl;
+
   if( file.open(QIODevice::ReadOnly)){
         QTextStream  data(&file);
         QString t;
@@ -154,7 +157,7 @@ void webmusic::readcookie()
                 //   qDebug()<<"zidingyi"<<name<<value<<cookie;
                 }
             }
-         //   qDebug()<<cookie<<endl;
+           // qDebug()<<cookie<<endl;
             jar->insertCookie(cookie);
           //  qDebug()<<"readcookie:"<<list;
         }
@@ -297,6 +300,7 @@ void webmusic:: gotmp3url(QString &url)
     QVariant ret = webview.page()->mainFrame()->evaluateJavaScript("document.getElementsByClassName('f-thide name fc1 f-fl')[0].innerText+'\\t'+document.getElementsByClassName('by f-thide f-fl')[0].innerText");    //strparam是运行js函数可以带的参数
    // qDebug()<<"toshowlrc"<<ret.toString();
     QString name = ret.toString();
+    trayIcon->setToolTip(name.replace('\t','-'));
     mp3list[name]=url;
     qDebug()<<"found a music cache:";//<<name<<url;
 }
@@ -337,6 +341,8 @@ QList<QNetworkCookie> mycookiejar::getallCookies(){
     QList<QNetworkCookie> list = allCookies();
     return list;
 }
+
+//===================================[mycache]=======================================================
 
 mycache:: mycache(QObject *parent):
     QNetworkDiskCache(parent)

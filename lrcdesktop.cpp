@@ -64,7 +64,7 @@ void lrcdesktop::paintEvent(QPaintEvent *event)
 //    p.restore();
     //==================[歌词]===================
     if(nowtext != 0){
-        QStringList list = lrctext.split('\n');
+    QStringList list = lrctext.split('\n');
         if( entered && (!ui->setbar->isVisible()) ) {
            nowpen.setColor(QColor(nowcolor).lighter(120));
            nextpen.setColor(QColor(nextcolor).lighter(120));
@@ -73,7 +73,7 @@ void lrcdesktop::paintEvent(QPaintEvent *event)
             nowpen.setColor(QColor(nowcolor));
             nextpen.setColor(QColor(nextcolor));
         }
-       //p.drawText(this->rect(),"lrca地方四大发送方打算地\n四大发送地方外人田",QTextOption(Qt::AlignCenter));
+       p.drawText(this->rect(),"lrca地方四大发送方打算地\n四大发送地方外人田",QTextOption(Qt::AlignCenter));
         if( nowtext ==1)  p.setPen(nowpen);
         else p.setPen(nextpen);
         p.drawText(this->rect().x(),this->rect().y(),this->rect().width(),this->rect().height()/2 ,Qt::AlignCenter,list.at(0) );
@@ -90,17 +90,20 @@ void lrcdesktop::paintEvent(QPaintEvent *event)
 void lrcdesktop::mouseDoubleClickEvent(QMouseEvent * event){
     if(event->button()==Qt::LeftButton )
     {
-         //   qDebug()<<windowFlags();
+         //   qDebug()<<windowFlags();The program has unexpectedly finished.
+
         if(windowFlags()==(Qt::Window|Qt::WindowTitleHint|Qt::WindowSystemMenuHint|Qt::WindowCloseButtonHint|Qt:: WindowStaysOnTopHint))
         {
             setting  = false;
-            if(  tmptosetting.indexOf('\t') < 1)    {
+            if(  tmptosetting.indexOf('\t') < 0)    {
                 lrctext = "网页云音乐";
                 nowtext = 0;
             }
             else {
                 nowtext = 1;
-                lrctext = tmptosetting;
+                QString t = tmptosetting;//在此不要操作tmptosetting，tmptosetting只能在setlrc中改变
+                t = t.replace("\n","  ");
+                lrctext = t.replace('\t','\n');
             }
             ui->setbar->hide();
             setWindowFlags(Qt::FramelessWindowHint|Qt::SplashScreen|Qt:: WindowStaysOnTopHint);
@@ -117,24 +120,25 @@ void lrcdesktop::mouseDoubleClickEvent(QMouseEvent * event){
         }
         event->accept();
     }
-    else QWidget::mouseReleaseEvent(event);
+    else QWidget::mouseDoubleClickEvent(event);
+    //qDebug()<<"doubleclicked";
 }
 
 
 void  lrcdesktop::setlrc(QString  t){
-
+//qDebug()<<"setlrc"<<setting;
+    //tmptosetting 就是储存原始歌词，用于设置后歌词的初始化
+    tmptosetting = t;
     if( setting ){
-        tmptosetting = t;
         return;//设置时不接收歌词
     }
-    if(  t.indexOf('\t') < 1)    {
+    if(  t.indexOf('\t') < 0)    {
         lrctext = "网页云音乐";
         nowtext = 0;
     }
     else  {
         t = t.replace("\n","  ");
         t = t.replace('\t','\n');
-
         QStringList list = t.split('\n');
         if( lrctext.indexOf('\n') == -1 ) { //如果之前是“网页云音乐”，就直接赋值
             lrctext = t;
@@ -210,8 +214,7 @@ void lrcdesktop::mousePressEvent(QMouseEvent* event)
 void lrcdesktop::mouseMoveEvent(QMouseEvent * event){
 
         move(event->globalPos()-oldpos);//貌似linux要这样
-        event->accept();
-
+       // event->accept();
 }
 
 void lrcdesktop::mouseReleaseEvent(QMouseEvent * event){
