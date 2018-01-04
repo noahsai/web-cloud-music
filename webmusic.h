@@ -2,7 +2,6 @@
 #define WEBMUSIC_H
 
 #include <QMainWindow>
-#include<QWebView>
 #include <QWebFrame>
 #include<QTimer>
 #include<QLabel>
@@ -18,11 +17,11 @@
 #include<QSettings>
 #include<QDir>
 #include<cache.h>
-
+#include<myqwebview.h>
+#include<mycookiejar.h>
 namespace Ui {
 class webmusic;
 }
-class mycookiejar;
 class mycache;
 
 class webmusic : public QMainWindow
@@ -50,14 +49,16 @@ private slots:
     void setslottoweb();
     void gotmp3url(QString&);
     void gotsavecachepath(QString&);
+    void linkclicked(QUrl);
+    void refresh();
 
 private:
     Ui::webmusic *ui;
     void closeEvent(QCloseEvent *event);
     void savecfg();
     void readcfg();
-    QWebView webview;
     QTimer timer;
+    myQWebview  webview;
     mycookiejar *jar;
     QString datapath;
   // QLabel lrc;
@@ -77,16 +78,6 @@ private:
 };
 
 
-class mycookiejar : public QNetworkCookieJar
-{
-    Q_OBJECT
-
-public:
-    mycookiejar (QObject * parent = 0);
-    ~mycookiejar();
-    QList<QNetworkCookie>  getallCookies();
-
-};
 
 class mycache :public QNetworkDiskCache
 {

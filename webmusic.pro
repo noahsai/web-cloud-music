@@ -17,11 +17,15 @@ LIBS += -lX11 -lXext
 SOURCES += main.cpp\
         webmusic.cpp \
     lrcdesktop.cpp \
-    cache.cpp
+    cache.cpp \
+    myqwebview.cpp \
+    mycookiejar.cpp
 
 HEADERS  += webmusic.h \
     lrcdesktop.h \
-    cache.h
+    cache.h \
+    myqwebview.h \
+    mycookiejar.h
 
 FORMS    += webmusic.ui \
     lrcdesktop.ui \

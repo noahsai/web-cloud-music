@@ -30,12 +30,20 @@ webmusic::webmusic(QWidget *parent) :
     connect(diskCache , SIGNAL(mp3url(QString&)),this , SLOT(gotmp3url(QString&)));
     webview.page()->networkAccessManager()->setCache(diskCache);
     //ebview.page()->networkAccessManager()->setCookieJar(jar);
-    //========本地数据===========
 
+
+    //========本地数据===========
     webview.settings()->enablePersistentStorage(datapath);
     webview.settings()->setAttribute(QWebSettings::LocalStorageEnabled,true);
     webview.settings()->setLocalStoragePath(datapath);
+//    webview.settings()->setAttribute(QWebSettings::OfflineStorageDatabaseEnabled,true);
+//    webview.settings()->setAttribute(QWebSettings::OfflineWebApplicationCacheEnabled,true);
+//    webview.settings()->setOfflineStoragePath(datapath);
+//    webview.settings()->setOfflineWebApplicationCachePath(datapath);
     webview.settings()->setAttribute(QWebSettings::PluginsEnabled,true);//flash
+    webview.settings()->setAttribute(QWebSettings::QWebSettings::JavascriptCanOpenWindows	,true);//
+    webview.settings()->setAttribute(QWebSettings::QWebSettings::JavascriptCanCloseWindows	,true);//
+   webview.page()->setLinkDelegationPolicy(QWebPage::DelegateAllLinks);
 
     //==========定时器===========
     timer.setParent(this);
@@ -52,6 +60,7 @@ webmusic::webmusic(QWidget *parent) :
     connect( &webview ,SIGNAL(loadFinished(bool)),this,SLOT(setslottoweb()));
     connect( &webview ,SIGNAL(loadFinished(bool)),this,SLOT(savecookie()));
     connect(&webview , SIGNAL(loadProgress(int)),ui->loading,SLOT(setValue(int)));
+    connect(&webview , SIGNAL(linkClicked(QUrl)),this , SLOT(linkclicked(QUrl)));
 
     setWindowTitle("网页云音乐");
     setWindowIcon(QIcon(":/icon.svg"));
@@ -171,8 +180,11 @@ void webmusic::trayiconactive(QSystemTrayIcon::ActivationReason reason)
 {
     if(reason == QSystemTrayIcon::Context ||reason == QSystemTrayIcon::Unknown ) return;
     else {
-        show();
+        if(isActiveWindow()) this->hide();
+        else {
+        showNormal();
         activateWindow();
+        }
     }
 }
 
@@ -258,9 +270,9 @@ void webmusic:: closeEvent(QCloseEvent* event){
         timer.start();
     }
     else timer.stop();
-    hide();
     savecfg();
     event->ignore();
+    hide();//保存后在隐藏
 }
 
 
@@ -269,7 +281,7 @@ void webmusic::savecfg()
     QSettings settings("web-cloud-music", "webmusic");
     settings.setValue("showlrc",showlrc->isChecked());
     settings.setValue("tolock",tolock->isChecked());
-    settings.setValue("geometry", this->geometry());
+    if(  (!isFullScreen())  && (!isHidden()) &&(!isMaximized())) settings.setValue("geometry", this->geometry());
     settings.setValue("savecachepath", savecachepath);
     //qDebug()<<"save:"<<this->geometry();
 }
@@ -302,7 +314,7 @@ void webmusic:: gotmp3url(QString &url)
     QString name = ret.toString();
     trayIcon->setToolTip(name.replace('\t','-'));
     mp3list[name]=url;
-    qDebug()<<"found a music cache:";//<<name<<url;
+    qDebug()<<"found a music cache:"<<name;//<<url;
 }
 
 void webmusic::opencache(){
@@ -325,22 +337,24 @@ void webmusic::gotsavecachepath(QString & p)//下次默认打开该地址
     savecfg();
 }
 
-
-
-
-//===================================[mycookiejar]====================================================
-mycookiejar ::mycookiejar(QObject * parent ):
-QNetworkCookieJar( parent )
-{
+void webmusic:: linkclicked(QUrl u){
+    //qDebug()<<u;
+    if(u.toString().indexOf("music.163.com/api/")!=-1) {
+        QWebView *view =  webview.newwindow();
+        view->setAttribute(Qt::WA_DeleteOnClose);
+        connect(view->page() , SIGNAL(windowCloseRequested()) , view ,SLOT(close()));
+        connect(view , SIGNAL(destroyed(QObject*)) , this ,SLOT(refresh()));
+        view->load(u);
+        view->show();
+    }
+    else webview.load(u);
 }
 
-mycookiejar::~mycookiejar(){
+void webmusic:: refresh(){
+webview.load(QUrl("http://music.163.com/#"));
 }
 
-QList<QNetworkCookie> mycookiejar::getallCookies(){
-    QList<QNetworkCookie> list = allCookies();
-    return list;
-}
+
 
 //===================================[mycache]=======================================================
 

@@ -59,14 +59,14 @@ void cache :: setlist(QMap<QString, QString> &map)
     ui->tableWidget->setRowCount(row);//
     for( it = map.begin() ; it!=map.end() ; it++)
     {
-        qDebug()<<"map";
+        //qDebug()<<"map";
        item = new QTableWidgetItem();
        QString key = it.key();
-        item->setText(key.split('\t').at(0));
+        item->setText(key.split('-').at(0));
         ui->tableWidget->setItem(i,0,item);
 
-        item = new QTableWidgetItem();
-        item->setText(key.split('\t').at(1));
+        item = new QTableWidgetItem();        
+        item->setText(key.split('-').at(1));
         ui->tableWidget->setItem(i,1,item);
 
         item = new QTableWidgetItem();
