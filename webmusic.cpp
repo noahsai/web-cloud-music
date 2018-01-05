@@ -36,13 +36,7 @@ webmusic::webmusic(QWidget *parent) :
     webview.settings()->enablePersistentStorage(datapath);
     webview.settings()->setAttribute(QWebSettings::LocalStorageEnabled,true);
     webview.settings()->setLocalStoragePath(datapath);
-//    webview.settings()->setAttribute(QWebSettings::OfflineStorageDatabaseEnabled,true);
-//    webview.settings()->setAttribute(QWebSettings::OfflineWebApplicationCacheEnabled,true);
-//    webview.settings()->setOfflineStoragePath(datapath);
-//    webview.settings()->setOfflineWebApplicationCachePath(datapath);
     webview.settings()->setAttribute(QWebSettings::PluginsEnabled,true);//flash
-    webview.settings()->setAttribute(QWebSettings::QWebSettings::JavascriptCanOpenWindows	,true);//
-    webview.settings()->setAttribute(QWebSettings::QWebSettings::JavascriptCanCloseWindows	,true);//
   // webview.page()->setLinkDelegationPolicy(QWebPage::DelegateAllLinks);//不需要了
 
     //==========定时器===========
@@ -54,8 +48,8 @@ webmusic::webmusic(QWidget *parent) :
    // lrc.resize(300,30);
    // lrc.show();
 
-    jar = new mycookiejar();//必须放在readcookie前
-    webview.page()->networkAccessManager()->setCookieJar(jar);
+    jar =  (mycookiejar*)(webview.page()->networkAccessManager()->cookieJar());
+    //webview是myqwebview类，自带mycookiejar，但必须放在readcookie前
     //connect(webview.page()->mainFrame(), SIGNAL(javaScriptWindowObjectCleared()),   this, SLOT(setslottoweb()));//qt推荐的，不过这样用貌似也没事
     connect( &webview ,SIGNAL(loadFinished(bool)),this,SLOT(setslottoweb()));
     connect( &webview ,SIGNAL(loadFinished(bool)),this,SLOT(savecookie()));

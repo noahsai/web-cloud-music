@@ -18,9 +18,11 @@ public:
     QWebView* newwindow();
 private:
     QWebView *	createWindow(QWebPage::WebWindowType type);
+    void copycookietosub(QWebView* sub);
 private slots:
     void loadurl(QUrl);
     void openurl(QUrl);
     void mvcookie();
+
 };
 #endif // MYQWEBVIEW_H

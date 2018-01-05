@@ -5,6 +5,10 @@ QWebView()
 {
     settings()->setAttribute(QWebSettings::QWebSettings::JavascriptCanOpenWindows	,true);//
     settings()->setAttribute(QWebSettings::QWebSettings::JavascriptCanCloseWindows	,true);//
+    settings()->setAttribute(QWebSettings::LocalStorageEnabled,true);
+    settings()->setAttribute(QWebSettings::PluginsEnabled,true);//flash
+    mycookiejar *jar = new mycookiejar;
+    this->page()->networkAccessManager()->setCookieJar(jar);
     myQWebPage *page = new myQWebPage;
     setPage(page);
     connect(page , SIGNAL(loadurl(QUrl)),this,SLOT(loadurl(QUrl)) );
@@ -15,11 +19,11 @@ myQWebview::~myQWebview(){
 }
 
 QWebView *  myQWebview::	createWindow(QWebPage::WebWindowType type){
-    QWebView *view = new QWebView();
-   view-> settings()->setAttribute(QWebSettings::QWebSettings::JavascriptCanOpenWindows	,true);//
-    view->settings()->setAttribute(QWebSettings::QWebSettings::JavascriptCanCloseWindows	,true);//
+    myQWebview *view = new myQWebview();
+    view->setAttribute(Qt::WA_DeleteOnClose);
     mycookiejar *jar = new mycookiejar;
     view->page()->networkAccessManager()->setCookieJar(jar);
+    copycookietosub(view);
     connect(view,SIGNAL(loadFinished(bool)),this,SLOT(mvcookie()));
     connect(view->page(),SIGNAL(windowCloseRequested()),view,SLOT(deleteLater()));
     return view;
@@ -34,6 +38,15 @@ void myQWebview::mvcookie(){
         this->page()->networkAccessManager()->cookieJar()->insertCookie(one);
     }
 }
+void myQWebview::copycookietosub(QWebView* sub){
+    mycookiejar * jar =( mycookiejar * ) (this->page()->networkAccessManager()->cookieJar() );
+    QList  <QNetworkCookie  >   list =jar->getallCookies();
+  //  qDebug()<<list.length()<<list;
+    foreach (QNetworkCookie one, list) {
+        sub->page()->networkAccessManager()->cookieJar()->insertCookie(one);
+    }
+}
+
 QWebView* myQWebview::newwindow(){
     return createWindow(QWebPage::WebBrowserWindow);
 }
