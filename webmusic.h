@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QWebFrame>
+#include <QWebView>
 #include<QTimer>
 #include<QLabel>
 #include<QNetworkCookie>
@@ -17,7 +18,7 @@
 #include<QSettings>
 #include<QDir>
 #include<cache.h>
-#include<myqwebview.h>
+#include<mywebview.h>>
 #include<mycookiejar.h>
 namespace Ui {
 class webmusic;
@@ -49,7 +50,7 @@ private slots:
     void setslottoweb();
     void gotmp3url(QString&);
     void gotsavecachepath(QString&);
-    void linkclicked(QUrl);
+  //  void linkclicked(QUrl);//不需要了
     void refresh();
 
 private:

@@ -7,6 +7,7 @@
 #include<QNetworkCookieJar>
 #include<QNetworkCookie>
 #include<mycookiejar.h>
+#include<myqwebpage.h>
 class myQWebview : public QWebView
 {
     Q_OBJECT
@@ -18,7 +19,8 @@ public:
 private:
     QWebView *	createWindow(QWebPage::WebWindowType type);
 private slots:
-
+    void loadurl(QUrl);
+    void openurl(QUrl);
     void mvcookie();
 };
 #endif // MYQWEBVIEW_H

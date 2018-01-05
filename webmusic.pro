@@ -18,14 +18,16 @@ SOURCES += main.cpp\
         webmusic.cpp \
     lrcdesktop.cpp \
     cache.cpp \
-    myqwebview.cpp \
-    mycookiejar.cpp
+    mycookiejar.cpp \
+    myqwebpage.cpp \
+    mywebview.cpp
 
 HEADERS  += webmusic.h \
     lrcdesktop.h \
     cache.h \
-    myqwebview.h \
-    mycookiejar.h
+    mycookiejar.h \
+    myqwebpage.h \
+    mywebview.h
 
 FORMS    += webmusic.ui \
     lrcdesktop.ui \

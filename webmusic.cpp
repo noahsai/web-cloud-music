@@ -43,7 +43,7 @@ webmusic::webmusic(QWidget *parent) :
     webview.settings()->setAttribute(QWebSettings::PluginsEnabled,true);//flash
     webview.settings()->setAttribute(QWebSettings::QWebSettings::JavascriptCanOpenWindows	,true);//
     webview.settings()->setAttribute(QWebSettings::QWebSettings::JavascriptCanCloseWindows	,true);//
-   webview.page()->setLinkDelegationPolicy(QWebPage::DelegateAllLinks);
+  // webview.page()->setLinkDelegationPolicy(QWebPage::DelegateAllLinks);//不需要了
 
     //==========定时器===========
     timer.setParent(this);
@@ -88,6 +88,7 @@ a = document.getElementsByClassName('m-nav')[0] ; a.children[4].style.display='n
 b = a.children[3];\
 c = b.getElementsByTagName('em')[0]; c.innerText='查看缓存';\
 b.onclick = Function(\"webcloudmusic.opencache();\");\
+d = b.getElementsByTagName('a')[0]; d.href=\"javascript:;\";d.target=\"\"; \
                                                     ");
     //这里不写点击网页里的关闭歌词界面触发关闭桌面歌词，以免关闭界面后又要手动打开桌面歌词
     ui->loading->hide();
@@ -337,18 +338,19 @@ void webmusic::gotsavecachepath(QString & p)//下次默认打开该地址
     savecfg();
 }
 
-void webmusic:: linkclicked(QUrl u){
-    //qDebug()<<u;
-    if(u.toString().indexOf("music.163.com/api/")!=-1) {
-        QWebView *view =  webview.newwindow();
-        view->setAttribute(Qt::WA_DeleteOnClose);
-        connect(view->page() , SIGNAL(windowCloseRequested()) , view ,SLOT(close()));
-        connect(view , SIGNAL(destroyed(QObject*)) , this ,SLOT(refresh()));
-        view->load(u);
-        view->show();
-    }
-    else webview.load(u);
-}
+//已经继承qwebview和qwebpage重写函数了，无需在使用改函数了
+//void webmusic:: linkclicked(QUrl u){
+//    //qDebug()<<u;
+//    if(u.toString().indexOf("music.163.com/api/")!=-1) {
+//        QWebView *view =  webview.newwindow();
+//        view->setAttribute(Qt::WA_DeleteOnClose);
+//        connect(view->page() , SIGNAL(windowCloseRequested()) , view ,SLOT(close()));
+//        connect(view , SIGNAL(destroyed(QObject*)) , this ,SLOT(refresh()));
+//        view->load(u);
+//        view->show();
+//    }
+//    else webview.load(u);
+//}
 
 void webmusic:: refresh(){
 webview.load(QUrl("http://music.163.com/#"));
