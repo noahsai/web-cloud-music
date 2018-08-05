@@ -1,7 +1,7 @@
 #include "myqwebpage.h"
 
 myQWebPage ::myQWebPage(QObject * parent ):
-QWebPage(parent)
+QWebEnginePage(parent)
 {
 }
 
@@ -9,15 +9,25 @@ myQWebPage::~myQWebPage(){
 }
 
 
-bool myQWebPage::acceptNavigationRequest(QWebFrame *frame, const QNetworkRequest &request, NavigationType type){
-    if(type==0){//如果是用户点击
-        if(frame!=mainFrame()){ //如果不是在本窗口的连接
-            emit openurl(request.url());
+bool myQWebPage::acceptNavigationRequest(const QUrl &url, NavigationType type, bool isMainFrame){
+    //qDebug()<<type<<"===============url"<<url;
+    if(type==QWebEnginePage::NavigationTypeLinkClicked){//如果是用户点击
+        if( url.toString().indexOf("ad.")!=-1) return false;
+//        if( url.toString().indexOf("opencache")!=-1) {
+//            opencache();
+//            qDebug()<<"emit opencache";
+//            return false;
+//        }//不知为何无效
+        if(isMainFrame){ //如果不是在本窗口的连接
+            //qDebug()<<"新窗口打开";
+            emit openurl(url);
         }else{
-            emit  loadurl(request.url());
+            //qDebug()<<"直接打开";
+            emit  loadurl(url);
         }
+        return false;
 
     }
-    return QWebPage::acceptNavigationRequest(frame, request, type);
+    else    return  QWebEnginePage::acceptNavigationRequest(url,  type,  isMainFrame);
 }
 

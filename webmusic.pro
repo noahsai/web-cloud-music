@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui webkitwidgets  x11extras
+QT       += core gui   x11extras webenginewidgets webchannel
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -18,14 +18,12 @@ SOURCES += main.cpp\
         webmusic.cpp \
     lrcdesktop.cpp \
     cache.cpp \
-    mycookiejar.cpp \
     myqwebpage.cpp \
     mywebview.cpp
 
 HEADERS  += webmusic.h \
     lrcdesktop.h \
     cache.h \
-    mycookiejar.h \
     myqwebpage.h \
     mywebview.h
 

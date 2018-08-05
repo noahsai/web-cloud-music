@@ -73,15 +73,33 @@ void lrcdesktop::paintEvent(QPaintEvent *event)
             nowpen.setColor(QColor(nowcolor));
             nextpen.setColor(QColor(nextcolor));
         }
-       p.drawText(this->rect(),"lrca地方四大发送方打算地\n四大发送地方外人田",QTextOption(Qt::AlignCenter));
-        if( nowtext ==1)  p.setPen(nowpen);
-        else p.setPen(nextpen);
+       //p.drawText(this->rect(),"--------------------\n===================",QTextOption(Qt::AlignCenter));
+        if( nowtext ==1)  {
+            fon.setBold(true);
+            p.setFont(fon);
+            p.setPen(nowpen);
+        }
+        else {
+            fon.setBold(false);
+            p.setFont(fon);
+            p.setPen(nextpen);
+        }
         p.drawText(this->rect().x(),this->rect().y(),this->rect().width(),this->rect().height()/2 ,Qt::AlignCenter,list.at(0) );
-        if( nowtext ==2 )  p.setPen(nowpen);
-        else  p.setPen(nextpen);
+        if( nowtext ==2 )  {
+            fon.setBold(true);
+            p.setFont(fon);
+            p.setPen(nowpen);
+        }
+        else  {
+            fon.setBold(false);
+            p.setFont(fon);
+            p.setPen(nextpen);
+        }
         p.drawText(this->rect().x(),this->rect().y()+this->rect().height()/2,this->rect().width(),this->rect().height()/2 ,Qt::AlignCenter,list.at(1) );
     }
     else{
+        fon.setBold(false);
+        p.setFont(fon);
         p.setPen(nowpen);
         p.drawText(this->rect(),Qt::AlignCenter,lrctext );
     }

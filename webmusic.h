@@ -2,12 +2,8 @@
 #define WEBMUSIC_H
 
 #include <QMainWindow>
-#include <QWebFrame>
-#include <QWebView>
 #include<QTimer>
 #include<QLabel>
-#include<QNetworkCookie>
-#include<QNetworkCookieJar>
 #include<QFile>
 #include<QTextStream>
 #include<QStringList>
@@ -19,11 +15,13 @@
 #include<QDir>
 #include<cache.h>
 #include<mywebview.h>>
-#include<mycookiejar.h>
+#include<QWebChannel>
+#include <QWebEnginePage>
+#include<myqwebpage.h>
+
 namespace Ui {
 class webmusic;
 }
-class mycache;
 
 class webmusic : public QMainWindow
 {
@@ -39,8 +37,6 @@ public slots:
 
 private slots:
     void timeout();
-    void savecookie();
-    void readcookie();
     void playstop();
     void pre();
     void next();
@@ -48,7 +44,7 @@ private slots:
     void trayiconactive(QSystemTrayIcon::ActivationReason);
     void trayinit();
     void setslottoweb();
-    void gotmp3url(QString&);
+    void gotmp3url(QString);
     void gotsavecachepath(QString&);
   //  void linkclicked(QUrl);//不需要了
     void refresh();
@@ -59,8 +55,7 @@ private:
     void savecfg();
     void readcfg();
     QTimer timer;
-    myQWebview  webview;
-    mycookiejar *jar;
+    myQWebview  *webview;
     QString datapath;
   // QLabel lrc;
 
@@ -74,23 +69,11 @@ private:
     QString  gotlrc;
     QMap<QString , QString>  mp3list;
     cache *cachemanager;
-     mycache * diskCache;
      QString savecachepath;
+     QWebChannel *channel;
+     bool isresize; //无奈添加该变量，用于解决界面卡死问题
 };
 
 
-
-class mycache :public QNetworkDiskCache
-{
-    Q_OBJECT
-
-public :
-    mycache (QObject *parent = 0);
-    ~mycache();
-    virtual QIODevice *	prepare(const QNetworkCacheMetaData & metaData);
-
-signals:
-    void mp3url( QString& );
-};
 
 #endif // WEBMUSIC_H

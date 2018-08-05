@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/">
         <file>icon.svg</file>
+        <file>qwebchannel.js</file>
     </qresource>
 </RCC>

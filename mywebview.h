@@ -2,27 +2,48 @@
 #define MYQWEBVIEW_H
 
 #include <QObject>
-#include<QWebView>
+#include <QWebEngineView>
+#include <QWebEnginePage>
+#include<QWebEngineProfile>
+#include<QWebEngineSettings>
 #include<QStandardPaths>
-#include<QNetworkCookieJar>
-#include<QNetworkCookie>
-#include<mycookiejar.h>
 #include<myqwebpage.h>
-class myQWebview : public QWebView
+#include<QWebEngineUrlRequestInterceptor>
+class myQWebEngineUrlRequestInterceptor;
+
+class myQWebview : public QWebEngineView
 {
     Q_OBJECT
 
 public:
     myQWebview (QWidget * parent = 0);
     ~myQWebview();
-    QWebView* newwindow();
+    QWebEngineView* newwindow();
 private:
-    QWebView *	createWindow(QWebPage::WebWindowType type);
-    void copycookietosub(QWebView* sub);
+    QWebEngineView *	createWindow(QWebEnginePage::WebWindowType type);
 private slots:
     void loadurl(QUrl);
     void openurl(QUrl);
-    void mvcookie();
+
+signals:
+    void foundmp3(QString url);
+    //void cacheopen();
 
 };
+
+
+
+class myQWebEngineUrlRequestInterceptor : public QWebEngineUrlRequestInterceptor
+{
+    Q_OBJECT
+
+public:
+    myQWebEngineUrlRequestInterceptor(QObject *parent = Q_NULLPTR);
+    void interceptRequest(QWebEngineUrlRequestInfo &info);
+
+signals:
+    void foundmp3(QString url);
+};
+
+
 #endif // MYQWEBVIEW_H

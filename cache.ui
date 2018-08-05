@@ -72,7 +72,7 @@
        </column>
        <column>
         <property name="text">
-         <string> </string>
+         <string/>
         </property>
        </column>
       </widget>
@@ -140,7 +140,7 @@
           </sizepolicy>
          </property>
          <property name="text">
-          <string>提取缓存</string>
+          <string>提取</string>
          </property>
         </widget>
        </item>

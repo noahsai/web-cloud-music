@@ -2,21 +2,23 @@
 #define myQWebPage_H
 
 #include <QObject>
-#include <QWebPage>
+#include <QWebEnginePage>
 #include<QNetworkRequest>
-class myQWebPage : public QWebPage
+class myQWebPage : public QWebEnginePage
 {
     Q_OBJECT
 
 public:
     myQWebPage (QObject * parent = 0);
     ~myQWebPage();
+
 signals:
     void openurl(QUrl);
     void loadurl(QUrl);
-private:
-    bool acceptNavigationRequest(QWebFrame *frame, const QNetworkRequest &request, NavigationType type);
+    //void opencache();//不知为何无效
 
+private:
+ bool acceptNavigationRequest(const QUrl &url, NavigationType type, bool isMainFrame);
 
 };
 #endif // myQWebPage_H

@@ -1,16 +1,16 @@
 #include "mywebview.h"
 
 myQWebview ::myQWebview(QWidget * parent ):
-QWebView()
+QWebEngineView()
 {
-    settings()->setAttribute(QWebSettings::QWebSettings::JavascriptCanOpenWindows	,true);//
-    settings()->setAttribute(QWebSettings::QWebSettings::JavascriptCanCloseWindows	,true);//
-    settings()->setAttribute(QWebSettings::LocalStorageEnabled,true);
-    settings()->setAttribute(QWebSettings::PluginsEnabled,true);//flash
-    mycookiejar *jar = new mycookiejar;
-    this->page()->networkAccessManager()->setCookieJar(jar);
-    myQWebPage *page = new myQWebPage;
+    settings()->setAttribute(QWebEngineSettings::JavascriptCanAccessClipboard,true);
+    settings()->setAttribute(QWebEngineSettings::PluginsEnabled,true);//flash
+    myQWebPage *page = new myQWebPage(this);
+    myQWebEngineUrlRequestInterceptor *webInterceptor = new myQWebEngineUrlRequestInterceptor();
+    page->profile()->setRequestInterceptor(webInterceptor);
+    connect(webInterceptor , SIGNAL(foundmp3(QString)) , this , SIGNAL(foundmp3(QString)));
     setPage(page);
+    //connect(page , SIGNAL(opencache()),this,SIGNAL(cacheopen()));
     connect(page , SIGNAL(loadurl(QUrl)),this,SLOT(loadurl(QUrl)) );
     connect(page , SIGNAL(openurl(QUrl)),this,SLOT(openurl(QUrl)));
 }
@@ -18,44 +18,38 @@ QWebView()
 myQWebview::~myQWebview(){
 }
 
-QWebView *  myQWebview::	createWindow(QWebPage::WebWindowType type){
+QWebEngineView *  myQWebview::	createWindow(QWebEnginePage::WebWindowType type){
     myQWebview *view = new myQWebview();
     view->setAttribute(Qt::WA_DeleteOnClose);
-    mycookiejar *jar = new mycookiejar;
-    view->page()->networkAccessManager()->setCookieJar(jar);
-    copycookietosub(view);
-    connect(view,SIGNAL(loadFinished(bool)),this,SLOT(mvcookie()));
     connect(view->page(),SIGNAL(windowCloseRequested()),view,SLOT(deleteLater()));
     return view;
 }
 
-void myQWebview::mvcookie(){
-    QWebView *view = qobject_cast<QWebView *>(sender());
-    mycookiejar * jar =( mycookiejar * ) (view->page()->networkAccessManager()->cookieJar() );
-    QList  <QNetworkCookie  >   list =jar->getallCookies();
-  //  qDebug()<<list.length()<<list;
-    foreach (QNetworkCookie one, list) {
-        this->page()->networkAccessManager()->cookieJar()->insertCookie(one);
-    }
-}
-void myQWebview::copycookietosub(QWebView* sub){
-    mycookiejar * jar =( mycookiejar * ) (this->page()->networkAccessManager()->cookieJar() );
-    QList  <QNetworkCookie  >   list =jar->getallCookies();
-  //  qDebug()<<list.length()<<list;
-    foreach (QNetworkCookie one, list) {
-        sub->page()->networkAccessManager()->cookieJar()->insertCookie(one);
-    }
-}
-
-QWebView* myQWebview::newwindow(){
-    return createWindow(QWebPage::WebBrowserWindow);
+QWebEngineView* myQWebview::newwindow(){
+    return createWindow(QWebEnginePage::WebBrowserWindow);
 }
 
 void myQWebview::loadurl(QUrl u){
     this->load(u);
 }
 void myQWebview::openurl(QUrl u){
-    QWebView *view = createWindow(QWebPage::WebBrowserWindow);
+    QWebEngineView *view = createWindow(QWebEnginePage::WebBrowserWindow);
     view->load(u);
     view->show();
+}
+
+
+//=======================
+myQWebEngineUrlRequestInterceptor::myQWebEngineUrlRequestInterceptor(QObject *parent)
+    : QWebEngineUrlRequestInterceptor(parent)
+{
+}
+
+void myQWebEngineUrlRequestInterceptor::interceptRequest(QWebEngineUrlRequestInfo &info)
+{
+    QString url = info.requestUrl().toString();
+    if(info.resourceType() == QWebEngineUrlRequestInfo::ResourceTypeMedia && (url.indexOf(".mp3")!=-1)){
+        emit foundmp3(url);
+        //qDebug() << "mp3:"<<url;
+    }
 }
