@@ -3,7 +3,6 @@
 
 #include <QWidget>
 #include<QHeaderView>
-#include<QNetworkDiskCache>
 #include<QNetworkAccessManager>
 #include<QNetworkReply>
 #include<QNetworkRequest>
@@ -13,6 +12,7 @@
 #include<QStandardPaths>
 #include<QTableWidgetItem>
 #include<QDebug>
+#include<QCloseEvent>
 namespace Ui {
 class cache;
 }
@@ -26,25 +26,26 @@ public:
     ~cache();
     void setlist(QMap<QString , QString> &);
     void setpath(QString&);
-    void setcache(QNetworkDiskCache*);
     bool isworking();
 
 signals:
     void pathset(QString& );
+    void cleanlist();
 
 private slots:
     void on_savecache_clicked();
     void getdata();
 
-    void on_cleancache_clicked();
 
     void on_selectall_clicked(bool checked);
 
+    void on_cleancache_clicked();
+
 private:
     void checkfin();
+    void closeEvent(QCloseEvent *event);
 
     Ui::cache *ui;
-    QNetworkDiskCache *diskcache;
     QNetworkReply *reply;
     QNetworkAccessManager manager;
     int now , all;

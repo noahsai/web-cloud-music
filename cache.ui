@@ -48,6 +48,9 @@
        <attribute name="horizontalHeaderHighlightSections">
         <bool>true</bool>
        </attribute>
+       <attribute name="horizontalHeaderMinimumSectionSize">
+        <number>30</number>
+       </attribute>
        <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
         <bool>true</bool>
        </attribute>
@@ -101,7 +104,7 @@
           </sizepolicy>
          </property>
          <property name="text">
-          <string>清除缓存</string>
+          <string>清空</string>
          </property>
         </widget>
        </item>

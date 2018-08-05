@@ -14,7 +14,11 @@ webmusic::webmusic(QWidget *parent) :
     ui->horizontalLayout->addWidget(webview);
    // justhide = false;
     playing = false;
-    cachemanager = NULL;
+    //======播放记录========
+    cachemanager = new cache(this);
+    cachemanager->setWindowFlags(Qt::Window);
+    connect( cachemanager , SIGNAL(pathset(QString&)) , this ,SLOT(gotsavecachepath(QString&)));
+    connect( cachemanager , SIGNAL(cleanlist()) , this ,SLOT(cleanlist()));
     //=========歌词=========
     lrcshow = new lrcdesktop();
     lrcshow->show();
@@ -66,18 +70,6 @@ webmusic::~webmusic()
 
 void webmusic::setslottoweb()
 {
-
-    qDebug()<<"setslottoweb ed";
-    webview->page()->runJavaScript( " \
-document.getElementsByClassName('ply')[0].onclick = Function(\"a = document.getElementsByClassName('pas')[0];b=(a!=null);webcloudmusic.timerstart(!b);\");\
-a = document.getElementsByClassName('m-nav')[0] ; a.children[4].style.display='none'; a.children[5].style.display='none';\
-a.children[3].style.display='none'\
-    ");
-//==========信号无效=======
-//    b = a.children[3];\
-//    c = b.getElementsByTagName('em')[0]; c.innerText='播放记录';\
-//    d = b.getElementsByTagName('a')[0]; d.href=\"http://opencache\";d.target=\"_blank\"; \
-    //这里不写点击网页里的关闭歌词界面触发关闭桌面歌词，以免关闭界面后又要手动打开桌面歌词
     ui->loading->hide();
     disconnect(webview , SIGNAL(loadProgress(int)),ui->loading,SLOT(setValue(int)));
     webview->show();
@@ -270,7 +262,7 @@ void webmusic:: gotmp3url(QString url)
      //qDebug()<<"name"<<name;
     trayIcon->setToolTip(name.replace('\t','-'));
     mp3list[name]=url;
-
+    cachemanager->setlist(mp3list);
      });
      qDebug()<<"found a mp3:"<<url;
 }
@@ -278,16 +270,12 @@ void webmusic:: gotmp3url(QString url)
 
 void webmusic::opencache(){
     qDebug()<<"webmusic::opencache()";
-    if(  !cachemanager ) {
-        cachemanager = new cache(this);
-        cachemanager->setWindowFlags(Qt::Window);
-        connect( cachemanager , SIGNAL(pathset(QString&)) , this ,SLOT(gotsavecachepath(QString&)));
-    }
+
     if(! cachemanager->isworking()){
-        cachemanager->setpath(savecachepath);
-        cachemanager->setlist(mp3list);
+        cachemanager->setpath(savecachepath);//防止下载途中修改了路径
     }
     cachemanager->show();
+    cachemanager->activateWindow();
 }
 
 void webmusic::gotsavecachepath(QString & p)//下次默认打开该地址
@@ -299,6 +287,13 @@ void webmusic::gotsavecachepath(QString & p)//下次默认打开该地址
 
 void webmusic:: refresh(){
 webview->load(QUrl("http://music.163.com/#"));
+}
+
+
+void webmusic:: cleanlist(){
+    mp3list.clear();
+    cachemanager->setlist(mp3list);
+
 }
 
 

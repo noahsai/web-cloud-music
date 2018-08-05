@@ -48,6 +48,7 @@ private slots:
     void gotsavecachepath(QString&);
   //  void linkclicked(QUrl);//不需要了
     void refresh();
+    void cleanlist();
 
 private:
     Ui::webmusic *ui;

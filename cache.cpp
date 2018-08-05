@@ -12,17 +12,14 @@ cache::cache(QWidget *parent) :
     working = false;
     cancel = false;
     ui->progressBar->hide();
-    this->setWindowTitle("缓存查看器");
+    this->setWindowTitle("播放记录");
     ui->tableWidget->horizontalHeader()->setVisible(true);
     ui->tableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
+    ui->tableWidget->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
     //ui->tableWidget->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
-    ui->tableWidget->setColumnWidth(1,100);
     ui->tableWidget->setColumnWidth(2,30);
     //ui->tableWidget->horizontalHeader()->setSortIndicatorShown(false);
-    diskcache = NULL;//初始化
 
-//   diskcache = new QNetworkDiskCache(this);//用于测试
-//    diskcache->setCacheDirectory("/tmp/web-cloud-music");
 }
 
 cache::~cache()
@@ -35,15 +32,9 @@ bool cache::isworking()
     return working;
 }
 
-void cache::setcache(QNetworkDiskCache* c)
-{
-    diskcache = c;
-}
-
 void cache :: setlist(QMap<QString, QString> &map)
 {
     if( working ) return;
-    if( map .isEmpty()) return;
     //qDebug()<<"map"<<map;
     ui->tableWidget->clearContents();//不清表头
     tasklist.clear();//清除列表
@@ -85,7 +76,7 @@ void cache::on_savecache_clicked()
     if(working) {
         cancel = true;
        if(reply)  reply->abort();
-       ui->savecache->setText("提取缓存");
+       ui->savecache->setText("提取");
        ui->progressBar->hide();
        working = false;
        return;
@@ -113,7 +104,7 @@ void cache::on_savecache_clicked()
     ui->progressBar->show();
     ui->savecache->setText("取消");
 
-    qDebug()<<"tasklist:"<<tasklist;
+    //qDebug()<<"tasklist:"<<tasklist;
     checkfin();
 
 }
@@ -133,36 +124,17 @@ void cache::checkfin()
         text = tasklist.at(now);
         name  = text.split('\n').at(0);
         url = text.split('\n').at(1);
-        name = path + "/" +name +"." + url.split('.').last();
-        qDebug()<<"cache file name:"<<name;
-         QIODevice *io =  NULL;//初始化
-        if(diskcache ) io = diskcache->data(QUrl(url));
-        qDebug()<<diskcache<<io;
-        if( io )
-        {
-            QFile file(name);
-            if( file.open(QIODevice::WriteOnly)){
-                qDebug()<<"wirte file";
-                QDataStream data(&file);
-                QByteArray m = io->readAll();
-                data<<m;
-                qDebug()<<"cachefile wrote";
-            }
-            file.close();
-            now ++;
-        }
-        else {
-            QNetworkRequest request;
-            request.setRawHeader(QByteArray("User-Agent"), "Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.99 Safari/537.36");
-            request.setRawHeader(QByteArray("Referer"), "http://music.163.com");
-            request.setUrl(QUrl(url) );
-            reply = manager.get(request);
-            connect(reply , SIGNAL(finished()),this, SLOT(getdata()));
-            return;
-        }
+
+        QNetworkRequest request;
+        request.setRawHeader(QByteArray("User-Agent"), "Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.99 Safari/537.36");
+        request.setRawHeader(QByteArray("Referer"), "http://music.163.com");
+        request.setUrl(QUrl(url) );
+        reply = manager.get(request);
+        connect(reply , SIGNAL(finished()),this, SLOT(getdata()));
+        return;
     }
     ui->progressBar->hide();
-    ui->savecache->setText("提取缓存");
+    ui->savecache->setText("提取");
     working = false;
 }
 
@@ -197,11 +169,6 @@ void cache::getdata(){
     checkfin();
 }
 
-void cache::on_cleancache_clicked()
-{
-    diskcache->clear();
-}
-
 void cache::on_selectall_clicked(bool checked)
 {
     QTableWidgetItem* item;
@@ -212,4 +179,14 @@ void cache::on_selectall_clicked(bool checked)
         else item->setCheckState(Qt::Unchecked);
     }
 
+}
+
+void cache::on_cleancache_clicked()
+{
+    emit cleanlist();
+}
+
+void cache:: closeEvent(QCloseEvent* event){
+    hide();//保存后在隐藏
+    event->ignore();
 }
