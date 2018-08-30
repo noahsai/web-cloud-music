@@ -11,8 +11,9 @@ lrcdesktop::lrcdesktop(QWidget *parent) :
 {
     ui->setupUi(this);
     this->setAutoFillBackground(false);
-    setWindowFlags(Qt::FramelessWindowHint|Qt::SplashScreen|Qt:: WindowStaysOnTopHint);
+    setWindowFlags(Qt::FramelessWindowHint|Qt::Tool|Qt:: WindowStaysOnTopHint);
     this->setAttribute(Qt::WA_TranslucentBackground, true);
+    //setAutoFillBackground(true);
     lrctext = "网页云音乐";
     nowtext =0;//默认只有一行，所以0
     locked = false;
@@ -110,7 +111,7 @@ void lrcdesktop::mouseDoubleClickEvent(QMouseEvent * event){
     {
          //   qDebug()<<windowFlags();The program has unexpectedly finished.
 
-        if(windowFlags()==(Qt::Window|Qt::WindowTitleHint|Qt::WindowSystemMenuHint|Qt::WindowCloseButtonHint|Qt:: WindowStaysOnTopHint))
+        if(windowFlags()==(Qt::CustomizeWindowHint|Qt::Window|Qt::WindowTitleHint))
         {
             setting  = false;
             if(  tmptosetting.indexOf('\t') < 0)    {
@@ -124,7 +125,7 @@ void lrcdesktop::mouseDoubleClickEvent(QMouseEvent * event){
                 lrctext = t.replace('\t','\n');
             }
             ui->setbar->hide();
-            setWindowFlags(Qt::FramelessWindowHint|Qt::SplashScreen|Qt:: WindowStaysOnTopHint);
+            setWindowFlags(Qt::FramelessWindowHint|Qt::Tool|Qt:: WindowStaysOnTopHint);
             this->show();
         }
         else {
@@ -133,10 +134,11 @@ void lrcdesktop::mouseDoubleClickEvent(QMouseEvent * event){
             lrctext = "网易版云音乐\n云音乐网页版";
             ui->setbar->show();
             this->setWindowTitle("歌词设置");
-            setWindowFlags((Qt::Window|Qt::WindowTitleHint|Qt::WindowSystemMenuHint|Qt::WindowCloseButtonHint|Qt:: WindowStaysOnTopHint));
-            this->show();
+            setWindowFlags(Qt::CustomizeWindowHint|Qt::Window|Qt::WindowTitleHint);
+            this->showNormal();
         }
         event->accept();
+        qDebug()<<size();
     }
     else QWidget::mouseDoubleClickEvent(event);
     //qDebug()<<"doubleclicked";
@@ -222,6 +224,7 @@ void lrcdesktop::closeEvent(QCloseEvent *event){
 
 void lrcdesktop::mousePressEvent(QMouseEvent* event)
 {
+    qDebug()<<"mousepress!!";
     if(event->button()==Qt::LeftButton )
     {
         oldpos=event->globalPos()-this->pos();

@@ -2,5 +2,6 @@
     <qresource prefix="/">
         <file>icon.svg</file>
         <file>qwebchannel.js</file>
+        <file>gao.js</file>
     </qresource>
 </RCC>

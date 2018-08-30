@@ -1,6 +1,9 @@
 #include "webmusic.h"
 #include "ui_webmusic.h"
 
+
+//setchecked()会自动出发连接的槽函数！！
+
 webmusic::webmusic(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::webmusic)
@@ -8,7 +11,7 @@ webmusic::webmusic(QWidget *parent) :
     ui->setupUi(this);
     isresize = false;
     webview = new myQWebview(this);
-   // connect(webview , SIGNAL(cacheopen()), this ,SLOT(opencache()));
+
     datapath = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) +"/web-cloud-music/webdata";
     QDir().mkpath(datapath);
     ui->horizontalLayout->addWidget(webview);
@@ -20,8 +23,7 @@ webmusic::webmusic(QWidget *parent) :
     connect( cachemanager , SIGNAL(pathset(QString&)) , this ,SLOT(gotsavecachepath(QString&)));
     connect( cachemanager , SIGNAL(cleanlist()) , this ,SLOT(cleanlist()));
     //=========歌词=========
-    lrcshow = new lrcdesktop();
-    lrcshow->show();
+    lrcshow = new lrcdesktop();//这里千万不能show！！！会导致增大尺寸时无法拖动！！！不知为何！！！
     //==========托盘========必须在歌词之后，trayinit里要用到歌词
     QIcon icon = QIcon(":/icon.svg");
     trayIcon = new QSystemTrayIcon(this);
@@ -43,21 +45,12 @@ webmusic::webmusic(QWidget *parent) :
     timer.setInterval(200);
     timer.setSingleShot(false);
     connect(&timer , SIGNAL(timeout()),this,SLOT(timeout()));
-    //lrc.setText("[ 歌 词 ]");
-   // lrc.resize(300,30);
-   // lrc.show();
-    connect(webview , SIGNAL(loadProgress(int)),ui->loading,SLOT(setValue(int)));//初始界面进度条
-    connect( webview ,SIGNAL(loadFinished(bool)),this,SLOT(setslottoweb()));//网页初始化
     //======找到mp3地址====
     connect(webview , SIGNAL(foundmp3(QString)) , this ,SLOT(gotmp3url(QString)));
-    //=======打开缓存======
-
     setWindowTitle("网页云音乐");
     setWindowIcon(QIcon(":/icon.svg"));
-    readcfg();
-
-    ui->loading->setMaximumWidth(this->width()*15/16);//需要放在readcfg之后
-    webview->hide();
+    connect( webview ,SIGNAL(loadStarted()),this,SLOT(setslottoweb()));//加载高音质或其他脚本
+    readcfg();//加载脚本要刷新网页，所以放最后吧
     webview->load(QUrl("https://music.163.com"));
 }
 
@@ -68,11 +61,18 @@ webmusic::~webmusic()
     delete ui;
 }
 
-void webmusic::setslottoweb()
+void webmusic::setslottoweb()//connect在readcfg之后执行enablejs(bool b)
 {
-    ui->loading->hide();
-    disconnect(webview , SIGNAL(loadProgress(int)),ui->loading,SLOT(setValue(int)));
-    webview->show();
+    QString name  = QApplication::applicationDirPath()+"/gao.js";
+    QFile file(":/gao.js");
+    if(file.open(QIODevice::ReadOnly)){
+        QString js;
+        js = file.readAll();
+        file.close();
+        webview->page()->runJavaScript(js);
+       qDebug()<<name;
+    }
+    else qDebug()<<"js open error";
 }
 
 void webmusic::timerstart(bool b){//用处不大，也就停止播放时打开歌词（timer时停止的），再播放时需要。
@@ -172,6 +172,11 @@ void webmusic::trayinit()
     QAction *cachemg=new QAction(tr("播放记录"),this);
     connect(cachemg , SIGNAL(triggered()) , this , SLOT(opencache()));
 
+    gaojs=new QAction(tr("高奸商"),this);
+    gaojs->setToolTip("可到程序目录下自行修理奸商^_^");
+    gaojs ->setCheckable(true);
+    connect(gaojs , SIGNAL(toggled(bool)) , this , SLOT(enablejs(bool)));
+
     QAction* quitAction = new QAction(tr("退出"), this);
     connect(quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));//若触发了退出就退出程序
 
@@ -182,26 +187,29 @@ void webmusic::trayinit()
     trayIconMenu->addAction(showlrc);
     trayIconMenu->addAction(tolock);
     trayIconMenu->addAction(cachemg);
+    trayIconMenu->addAction(gaojs);
     trayIconMenu->addAction(quitAction);//把退出加到入菜单项
     trayIcon->setContextMenu(trayIconMenu);//设置托盘上下文菜单为trayIconMenu
 
 }
 
+
 void webmusic::toshowlrc(bool b)//隐藏歌词时不要影响网页的歌词了
 {
     qDebug()<<"toshowlrc";
     if( b )  {
-        lrcshow->setVisible(true);
-        showlrc ->setChecked(true);
+        lrcshow->show();
+        //别调用showlrc ->setChecked(true);//setchecked()会自动出发连接的槽函数！！
         clickweblrc(true);
         timer.start();
     }
     else {
-        showlrc ->setChecked(false);
-        lrcshow->setVisible(false);
+        //别调用showlrc ->setChecked(false);//setchecked()会自动出发连接的槽函数！！
+        lrcshow->hide();
         timer.stop();
     }
-   if(ui->loading->isHidden())  savecfg();
+   savecfg();
+
 }
 
 void webmusic:: closeEvent(QCloseEvent* event){
@@ -210,7 +218,7 @@ void webmusic:: closeEvent(QCloseEvent* event){
     QString text = v.toString();
     if(!text.isEmpty() && showlrc->isChecked()) {
        //  qDebug()<<"toshowlrc"<<ret.toString();
-         toshowlrc(true);//里面会
+         showlrc ->setChecked(true);//里面会
         timer.start();
     }
     else timer.stop();
@@ -226,6 +234,7 @@ void webmusic::savecfg()
     QSettings settings("web-cloud-music", "webmusic");
     settings.setValue("showlrc",showlrc->isChecked());
     settings.setValue("tolock",tolock->isChecked());
+    settings.setValue("enablejs",gaojs->isChecked());
     if(  (!isFullScreen())  && (!isHidden()) &&(!isMaximized())) settings.setValue("geometry", this->geometry());
     settings.setValue("savecachepath", savecachepath);
     //qDebug()<<"save:"<<this->geometry();
@@ -237,18 +246,18 @@ void webmusic::readcfg()
    // qDebug()<<settings.fileName();
     bool lrc =  settings.value("showlrc",true).toBool();
     bool lock =  settings.value("tolock",false).toBool();
+    bool js =  settings.value("enablejs",true).toBool();
     setGeometry(settings.value("geometry",QRect((QApplication::desktop()->width()-this->width())/2 ,
                                                 QApplication::desktop()->height()-100,
                                1100 ,600)
                                ).toRect());
     savecachepath = settings.value("savecachepath",QString("")).toString();
 //先设置置顶，再设置显示状态
-    tolock->setChecked(lock);
-    lrcshow->tolock(lock);
-    showlrc ->setChecked(lrc);//这样设置时会触发信号的所以无需toshowlrc了
+    tolock->setChecked(lock);//setchecked()会自动出发连接的槽函数！！
+    //lrcshow->tolock(lock);
+    showlrc ->setChecked(lrc);//setchecked()会自动出发连接的槽函数！！
     tolock->setEnabled(lrc);
-    toshowlrc(lrc);
-    //qDebug()<<"read:"<<this->geometry();
+    //gaojs->setChecked(js);//setchecked()会自动出发连接的槽函数！！
 
 }
 
@@ -294,6 +303,20 @@ void webmusic:: cleanlist(){
     mp3list.clear();
     cachemanager->setlist(mp3list);
 
+}
+
+void webmusic::enablejs(bool b){
+    qDebug()<<"!!!!!!!!!!!!!!!!!!enablejs";
+//    if(b) connect( webview ,SIGNAL(loadStarted()),this,SLOT(setslottoweb()));//加载高音质或其他脚本
+//    else disconnect( webview ,SIGNAL(loadStarted()),this,SLOT(setslottoweb()));//不加载脚本
+    webview->page()->deleteLater();
+    myQWebPage *page = new myQWebPage(this);
+    myQWebEngineUrlRequestInterceptor *webInterceptor = new myQWebEngineUrlRequestInterceptor();
+    page->profile()->setRequestInterceptor(webInterceptor);
+    connect(webInterceptor , SIGNAL(foundmp3(QString)) , webview , SIGNAL(foundmp3(QString)));
+    webview->setPage(page);
+    connect( webview ,SIGNAL(loadStarted()),this,SLOT(setslottoweb()));//加载高音质或其他脚本
+    webview->load(QUrl("https://music.163.com"));
 }
 
 

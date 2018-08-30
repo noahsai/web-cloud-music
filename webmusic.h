@@ -18,6 +18,8 @@
 #include<QWebChannel>
 #include <QWebEnginePage>
 #include<myqwebpage.h>
+#include<QWebEngineScriptCollection>
+#include <QWebEngineScript>
 
 namespace Ui {
 class webmusic;
@@ -49,6 +51,7 @@ private slots:
   //  void linkclicked(QUrl);//不需要了
     void refresh();
     void cleanlist();
+    void enablejs(bool);
 
 private:
     Ui::webmusic *ui;
@@ -63,7 +66,8 @@ private:
     QSystemTrayIcon *trayIcon;
     QMenu *trayIconMenu;
     QAction*  showlrc;
-     QAction*  tolock;
+    QAction*  tolock;
+    QAction*  gaojs;
     lrcdesktop * lrcshow;
     //bool  justhide;
     bool playing;
