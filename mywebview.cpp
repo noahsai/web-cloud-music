@@ -6,13 +6,14 @@ QWebEngineView()
     settings()->setAttribute(QWebEngineSettings::JavascriptCanAccessClipboard,true);
     settings()->setAttribute(QWebEngineSettings::PluginsEnabled,true);//flash
     myQWebPage *page = new myQWebPage(this);
+    //因为reload要换page的原因，下面改为由外面设置了
     myQWebEngineUrlRequestInterceptor *webInterceptor = new myQWebEngineUrlRequestInterceptor();
     page->profile()->setRequestInterceptor(webInterceptor);
     connect(webInterceptor , SIGNAL(foundmp3(QString)) , this , SIGNAL(foundmp3(QString)));
     setPage(page);
-    //connect(page , SIGNAL(opencache()),this,SIGNAL(cacheopen()));
     connect(page , SIGNAL(loadurl(QUrl)),this,SLOT(loadurl(QUrl)) );
     connect(page , SIGNAL(openurl(QUrl)),this,SLOT(openurl(QUrl)));
+    connect(page , SIGNAL(toreload()),this,SIGNAL(toreload()));
 }
 
 myQWebview::~myQWebview(){

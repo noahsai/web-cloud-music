@@ -15,6 +15,7 @@ public:
 signals:
     void openurl(QUrl);
     void loadurl(QUrl);
+    void toreload();
     //void opencache();//不知为何无效
 
 private:

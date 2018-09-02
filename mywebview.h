@@ -27,8 +27,7 @@ private slots:
 
 signals:
     void foundmp3(QString url);
-    //void cacheopen();
-
+    void toreload();
 };
 
 

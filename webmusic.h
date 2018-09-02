@@ -52,6 +52,7 @@ private slots:
     void refresh();
     void cleanlist();
     void enablejs(bool);
+    void reload();
 
 private:
     Ui::webmusic *ui;

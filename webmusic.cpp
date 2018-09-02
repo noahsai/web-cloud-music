@@ -31,27 +31,28 @@ webmusic::webmusic(QWidget *parent) :
     connect(trayIcon,SIGNAL(activated(QSystemTrayIcon::ActivationReason)),this,SLOT(trayiconactive(QSystemTrayIcon::ActivationReason)));
     trayinit();
     trayIcon->show();
-    //=========缓存===========
-    QDir().mkpath("/tmp/web-cloud-music");
-    webview->page()->profile()->setCachePath("/tmp/web-cloud-music");
 
     //========本地数据===========
     webview->settings()->setAttribute(QWebEngineSettings::PluginsEnabled,true);
     webview->settings()->setAttribute(QWebEngineSettings::JavascriptCanAccessClipboard,true);
     webview->page()->profile()->setPersistentStoragePath(datapath);
+    //--------找到mp3地址--------
+    connect(webview , SIGNAL(foundmp3(QString)) , this , SLOT(gotmp3url(QString)));
+    //--------连接toreload信号解决刷新后不执行脚本的问题-------
+    connect(webview , SIGNAL(toreload()) , this , SLOT(reload()));
 
     //==========定时器===========
     timer.setParent(this);
     timer.setInterval(200);
     timer.setSingleShot(false);
     connect(&timer , SIGNAL(timeout()),this,SLOT(timeout()));
-    //======找到mp3地址====
-    connect(webview , SIGNAL(foundmp3(QString)) , this ,SLOT(gotmp3url(QString)));
+
     setWindowTitle("网页云音乐");
     setWindowIcon(QIcon(":/icon.svg"));
-    connect( webview ,SIGNAL(loadStarted()),this,SLOT(setslottoweb()));//加载高音质或其他脚本
+//    connect( webview ,SIGNAL(loadStarted()),this,SLOT(setslottoweb()));//加载高音质或其他脚本
+    webview->setUrl(QUrl("https://music.163.com"));
+
     readcfg();//加载脚本要刷新网页，所以放最后吧
-    webview->load(QUrl("https://music.163.com"));
 }
 
 webmusic::~webmusic()
@@ -257,7 +258,7 @@ void webmusic::readcfg()
     //lrcshow->tolock(lock);
     showlrc ->setChecked(lrc);//setchecked()会自动出发连接的槽函数！！
     tolock->setEnabled(lrc);
-    //gaojs->setChecked(js);//setchecked()会自动出发连接的槽函数！！
+    if(js) gaojs->setChecked(js);//setchecked()会自动出发连接的槽函数！！//默认没勾选，所以false跳过。
 
 }
 
@@ -306,18 +307,35 @@ void webmusic:: cleanlist(){
 }
 
 void webmusic::enablejs(bool b){
-    qDebug()<<"!!!!!!!!!!!!!!!!!!enablejs";
-//    if(b) connect( webview ,SIGNAL(loadStarted()),this,SLOT(setslottoweb()));//加载高音质或其他脚本
-//    else disconnect( webview ,SIGNAL(loadStarted()),this,SLOT(setslottoweb()));//不加载脚本
-    webview->page()->deleteLater();
-    myQWebPage *page = new myQWebPage(this);
-    myQWebEngineUrlRequestInterceptor *webInterceptor = new myQWebEngineUrlRequestInterceptor();
-    page->profile()->setRequestInterceptor(webInterceptor);
-    connect(webInterceptor , SIGNAL(foundmp3(QString)) , webview , SIGNAL(foundmp3(QString)));
-    webview->setPage(page);
-    connect( webview ,SIGNAL(loadStarted()),this,SLOT(setslottoweb()));//加载高音质或其他脚本
-    webview->load(QUrl("https://music.163.com"));
+    if(b){ //加载高音质或其他脚本
+        qDebug()<<"RUNJS";
+        QUrl url = webview->url();
+        webview->page()->deleteLater();
+        myQWebPage *page = new myQWebPage(this);
+        myQWebEngineUrlRequestInterceptor *webInterceptor = new myQWebEngineUrlRequestInterceptor();
+        connect(webInterceptor , SIGNAL(foundmp3(QString)) , webview , SIGNAL(foundmp3(QString)));
+        page->profile()->setRequestInterceptor(webInterceptor);
+        connect(page , SIGNAL(loadurl(QUrl)),webview,SLOT(loadurl(QUrl)) );
+        connect(page , SIGNAL(openurl(QUrl)),webview,SLOT(openurl(QUrl)));
+        connect(page , SIGNAL(toreload()),webview,SIGNAL(toreload()));
+        webview->setPage(page);
+        connect( webview ,SIGNAL(loadStarted()),this,SLOT(setslottoweb()));//加载高音质或其他脚本
+        webview->load(url);
+    }
+    else {
+        qDebug()<<"NOJS RELOAD";
+        disconnect( webview ,SIGNAL(loadStarted()),this,SLOT(setslottoweb()));//不加载脚本
+        QUrl url = webview->url();
+        webview->load(url);
+        //不能用reload，否则会不断出发reload信号，死循环。
+    }
+
 }
 
 
-
+void webmusic::reload()
+{
+    qDebug()<<"reload singal";
+    if(gaojs->isChecked()) enablejs(true);
+    else enablejs(false);
+}

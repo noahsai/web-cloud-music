@@ -28,6 +28,12 @@ bool myQWebPage::acceptNavigationRequest(const QUrl &url, NavigationType type, b
         return false;
 
     }
+    else if(type==QWebEnginePage::NavigationTypeReload){
+        //qDebug()<<"reload singal";
+        emit toreload();
+        return false;
+
+    }
     else    return  QWebEnginePage::acceptNavigationRequest(url,  type,  isMainFrame);
 }
 
