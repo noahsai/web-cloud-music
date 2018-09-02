@@ -65,7 +65,7 @@ webmusic::~webmusic()
 void webmusic::setslottoweb()//connect在readcfg之后执行enablejs(bool b)
 {
     QString name  = QApplication::applicationDirPath()+"/gao.js";
-    QFile file(":/gao.js");
+    QFile file(name);
     if(file.open(QIODevice::ReadOnly)){
         QString js;
         js = file.readAll();
@@ -73,7 +73,18 @@ void webmusic::setslottoweb()//connect在readcfg之后执行enablejs(bool b)
         webview->page()->runJavaScript(js);
        qDebug()<<name;
     }
-    else qDebug()<<"js open error";
+    else {
+        qDebug()<<"outside js open error,test inside";
+        file.setFileName(":/gao.js");
+        if(file.open(QIODevice::ReadOnly)){
+            QString js;
+            js = file.readAll();
+            file.close();
+            webview->page()->runJavaScript(js);
+           qDebug()<<name;
+        }
+        else qDebug()<<"inside js open error";
+    }
 }
 
 void webmusic::timerstart(bool b){//用处不大，也就停止播放时打开歌词（timer时停止的），再播放时需要。
