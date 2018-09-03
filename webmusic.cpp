@@ -51,7 +51,6 @@ webmusic::webmusic(QWidget *parent) :
     setWindowIcon(QIcon(":/icon.svg"));
 //    connect( webview ,SIGNAL(loadStarted()),this,SLOT(setslottoweb()));//加载高音质或其他脚本
     webview->setUrl(QUrl("https://music.163.com"));
-
     readcfg();//加载脚本要刷新网页，所以放最后吧
 }
 

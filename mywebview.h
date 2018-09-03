@@ -9,6 +9,10 @@
 #include<QStandardPaths>
 #include<myqwebpage.h>
 #include<QWebEngineUrlRequestInterceptor>
+#include<QMenu>
+#include<QAction>
+#include <QWebEngineContextMenuData>
+
 class myQWebEngineUrlRequestInterceptor;
 
 class myQWebview : public QWebEngineView
@@ -24,6 +28,7 @@ private:
 private slots:
     void loadurl(QUrl);
     void openurl(QUrl);
+    void mkmune(QPoint);
 
 signals:
     void foundmp3(QString url);
