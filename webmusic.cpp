@@ -1,4 +1,4 @@
-#include "webmusic.h"
+ #include "webmusic.h"
 #include "ui_webmusic.h"
 
 
@@ -152,7 +152,8 @@ void webmusic::next(){
 void webmusic:: clickweblrc(bool b){
     // document.getElementsByClassName('icn icn-list')[0].onclick = Function(\"a = document.getElementById('g_playlist');b=(a!=null);webcloudmusic.toshowlrc(!b);\");
     QString cmd ="document.getElementsByClassName('lytit')[0].innerText";    //
-    //qDebug()<<ret.toString();
+    //
+    qDebug()<<cmd;
     webview->page()->runJavaScript(cmd, [=](const QVariant &v) {
     bool now =  !(v.toString().isEmpty()) ;//现在网页歌词的状态
     if( b^ now)    webview->page()->runJavaScript("document.getElementsByClassName('icn icn-list')[0].click()");//使用异或，不同时执行，相同时忽略
@@ -228,8 +229,8 @@ void webmusic:: closeEvent(QCloseEvent* event){
     webview->page()->runJavaScript(cmd, [=](const QVariant &v) {
     QString text = v.toString();
     if(!text.isEmpty() && showlrc->isChecked()) {
-       //  qDebug()<<"toshowlrc"<<ret.toString();
-         showlrc ->setChecked(true);//里面会
+         qDebug()<<"toshowlrc"<<v .toString();
+         toshowlrc(true);//里面会
         timer.start();
     }
     else timer.stop();
@@ -264,11 +265,12 @@ void webmusic::readcfg()
                                ).toRect());
     savecachepath = settings.value("savecachepath",QString("")).toString();
 //先设置置顶，再设置显示状态
-    tolock->setChecked(lock);//setchecked()会自动出发连接的槽函数！！
-    //lrcshow->tolock(lock);
-    showlrc ->setChecked(lrc);//setchecked()会自动出发连接的槽函数！！
+    qDebug()<<lock<<lrc<<js;
     tolock->setEnabled(lrc);
-    if(js) gaojs->setChecked(js);//setchecked()会自动出发连接的槽函数！！//默认没勾选，所以false跳过。
+    tolock->setChecked(lock);//默认是false，如果设为true时setchecked()会自动出发连接的槽函数！！
+    showlrc ->setChecked(lrc);//默认是false，如果设为true时setchecked()会自动出发连接的槽函数！！
+    lrcshow->tolock(lock);
+    if(js) gaojs->setChecked(js);//默认是false，如果设为true时setchecked()会自动出发连接的槽函数！！
 
 }
 
