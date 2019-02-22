@@ -11,7 +11,7 @@ webmusic::webmusic(QWidget *parent) :
     ui->setupUi(this);
     isresize = false;
     webview = new myQWebview(this);
-
+    webview->page()->profile()->setHttpUserAgent("Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/534.16 (KHTML, like Gecko) Chrome/59 Safari/534.16");
     datapath = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) +"/web-cloud-music/webdata";
     QDir().mkpath(datapath);
     ui->horizontalLayout->addWidget(webview);
@@ -49,10 +49,11 @@ webmusic::webmusic(QWidget *parent) :
 
     setWindowTitle("网页云音乐");
     setWindowIcon(QIcon(":/icon.svg"));
-//    connect( webview ,SIGNAL(loadStarted()),this,SLOT(setslottoweb()));//加载高音质或其他脚本
+    connect( webview ,SIGNAL(loadStarted()),this,SLOT(initpage()));//
     webview->setUrl(QUrl("https://music.163.com"));
     readcfg();//加载脚本要刷新网页，所以放最后吧
 }
+
 
 webmusic::~webmusic()
 {
@@ -63,6 +64,7 @@ webmusic::~webmusic()
 
 void webmusic::setslottoweb()//connect在readcfg之后执行enablejs(bool b)
 {
+    webview->page()->runJavaScript("document.getElementsByClassName('ply j-flag')[0].click()");//将会触发timerstart();
     QString name  = QApplication::applicationDirPath()+"/gao.js";
     QFile file(name);
     if(file.open(QIODevice::ReadOnly)){
@@ -351,3 +353,5 @@ void webmusic::reload()
     if(gaojs->isChecked()) enablejs(true);
     else enablejs(false);
 }
+
+

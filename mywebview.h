@@ -12,7 +12,7 @@
 #include<QMenu>
 #include<QAction>
 #include <QWebEngineContextMenuData>
-
+#include<QCloseEvent>
 class myQWebEngineUrlRequestInterceptor;
 
 class myQWebview : public QWebEngineView
@@ -25,14 +25,14 @@ public:
     QWebEngineView* newwindow();
 private:
     QWebEngineView *	createWindow(QWebEnginePage::WebWindowType type);
+
 private slots:
-    void loadurl(QUrl);
-    void openurl(QUrl);
     void mkmune(QPoint);
 
 signals:
     void foundmp3(QString url);
     void toreload();
+
 };
 
 

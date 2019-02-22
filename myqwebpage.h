@@ -13,13 +13,11 @@ public:
     ~myQWebPage();
 
 signals:
-    void openurl(QUrl);
-    void loadurl(QUrl);
     void toreload();
-    //void opencache();//不知为何无效
 
 private:
- bool acceptNavigationRequest(const QUrl &url, NavigationType type, bool isMainFrame);
 
+protected:
+ bool acceptNavigationRequest(const QUrl &url, NavigationType type, bool isMainFrame);
 };
 #endif // myQWebPage_H

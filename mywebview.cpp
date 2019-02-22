@@ -1,7 +1,7 @@
 #include "mywebview.h"
 
 myQWebview ::myQWebview(QWidget * parent ):
-QWebEngineView()
+    QWebEngineView(parent)
 {
     settings()->setAttribute(QWebEngineSettings::JavascriptCanAccessClipboard,true);
     settings()->setAttribute(QWebEngineSettings::PluginsEnabled,true);//flash
@@ -11,8 +11,6 @@ QWebEngineView()
     page->profile()->setRequestInterceptor(webInterceptor);
     connect(webInterceptor , SIGNAL(foundmp3(QString)) , this , SIGNAL(foundmp3(QString)));
     setPage(page);
-    connect(page , SIGNAL(loadurl(QUrl)),this,SLOT(loadurl(QUrl)) );
-    connect(page , SIGNAL(openurl(QUrl)),this,SLOT(openurl(QUrl)));
     connect(page , SIGNAL(toreload()),this,SIGNAL(toreload()));
     setContextMenuPolicy(Qt::CustomContextMenu);
     connect(this ,SIGNAL(customContextMenuRequested(QPoint)),this , SLOT(mkmune(QPoint)));
@@ -25,6 +23,7 @@ QWebEngineView *  myQWebview::	createWindow(QWebEnginePage::WebWindowType type){
     myQWebview *view = new myQWebview();
     view->setAttribute(Qt::WA_DeleteOnClose);
     connect(view->page(),SIGNAL(windowCloseRequested()),view,SLOT(deleteLater()));
+    view->show();
     return view;
 }
 
@@ -32,14 +31,6 @@ QWebEngineView* myQWebview::newwindow(){
     return createWindow(QWebEnginePage::WebBrowserWindow);
 }
 
-void myQWebview::loadurl(QUrl u){
-    this->load(u);
-}
-void myQWebview::openurl(QUrl u){
-    QWebEngineView *view = createWindow(QWebEnginePage::WebBrowserWindow);
-    view->load(u);
-    view->show();
-}
 
 void myQWebview::mkmune(QPoint p){
     QMenu* menu = new QMenu(this);
@@ -67,6 +58,7 @@ void myQWebview::mkmune(QPoint p){
     menu->popup(QCursor::pos());
 }
 
+
 //=======================
 myQWebEngineUrlRequestInterceptor::myQWebEngineUrlRequestInterceptor(QObject *parent)
     : QWebEngineUrlRequestInterceptor(parent)
@@ -76,9 +68,10 @@ myQWebEngineUrlRequestInterceptor::myQWebEngineUrlRequestInterceptor(QObject *pa
 void myQWebEngineUrlRequestInterceptor::interceptRequest(QWebEngineUrlRequestInfo &info)
 {
     QString url = info.requestUrl().toString();
-    if(info.resourceType() == QWebEngineUrlRequestInfo::ResourceTypeMedia && (url.indexOf(".mp3")!=-1)){
+    //qDebug() << info.resourceType()<<url;
+    if(url.indexOf(".mp3")!=-1){
+       // qDebug() << "mp3:"<<url;
         emit foundmp3(url);
-        //qDebug() << "mp3:"<<url;
     }
 }
 

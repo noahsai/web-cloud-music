@@ -14,7 +14,7 @@
 #include<QSettings>
 #include<QDir>
 #include<cache.h>
-#include<mywebview.h>>
+#include<mywebview.h>
 #include<QWebChannel>
 #include <QWebEnginePage>
 #include<myqwebpage.h>
@@ -48,6 +48,7 @@ private slots:
     void setslottoweb();
     void gotmp3url(QString);
     void gotsavecachepath(QString&);
+
   //  void linkclicked(QUrl);//不需要了
     void refresh();
     void cleanlist();
