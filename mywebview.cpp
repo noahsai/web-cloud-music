@@ -69,7 +69,7 @@ void myQWebEngineUrlRequestInterceptor::interceptRequest(QWebEngineUrlRequestInf
 {
     QString url = info.requestUrl().toString();
     //qDebug() << info.resourceType()<<url;
-    if(url.indexOf(".mp3")!=-1){
+    if(url.indexOf(".mp3")!=-1 || url.indexOf(".m4a")!=-1){
        // qDebug() << "mp3:"<<url;
         emit foundmp3(url);
     }
