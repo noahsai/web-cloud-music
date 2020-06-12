@@ -126,8 +126,8 @@ void cache::checkfin()
         url = text.split('\n').at(1);
 
         QNetworkRequest request;
-        request.setRawHeader(QByteArray("User-Agent"), "Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.99 Safari/537.36");
-        request.setRawHeader(QByteArray("Referer"), "http://music.163.com");
+        request.setRawHeader(QByteArray("User-Agent"), "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36");
+        request.setRawHeader(QByteArray("Referer"), "https://music.163.com");
         request.setUrl(QUrl(url) );
         reply = manager.get(request);
         connect(reply , SIGNAL(finished()),this, SLOT(getdata()));
@@ -156,10 +156,11 @@ void cache::getdata(){
     QFile file(name);
     if( file.open(QIODevice::WriteOnly)){
         qDebug()<<"wirte file";
-        QDataStream data(&file);
+//        QDataStream data(&file);
         QByteArray m = reply->readAll();
-        data<<m;
-        qDebug()<<"file wrote";
+//        data<<m;
+        file.write(m);
+        qDebug()<<"file wrote"<<"size:"<<file.size();
     }
     reply->deleteLater();
     reply = NULL;
